@@ -144,8 +144,11 @@ class WebView(QWebView):
 				self.load(QUrl("file://"+path))
 			else:
 				self.load(url)
+		elif url.scheme() == "https" or url.scheme() == "http":
+			self.load(url)
 		else:
 			path = os.path.abspath("ui/error.html")
+			self.load(QUrl("file://"+path))
 
 	def loadContent(self, url):
 		print("loadContent: {}".format(url.toString()))
