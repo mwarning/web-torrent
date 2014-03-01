@@ -6,7 +6,8 @@ A magnet link / torrent files content can be browsed and displayed like a websit
 
 This is an experiment to explore how web sites and P2P technology can be merged.
 
-* OS supported: GNU/Linux (e.g. Debian)
+* OS supported: GNU/Linux
+ * Ubuntu/Debian: `apt-get install python-libtorrent python-qt4`
 * Software: Python, libtorrent+python-bindings, PyQt/Webkit
 * Current status: alpha
 * License: GPLv3
