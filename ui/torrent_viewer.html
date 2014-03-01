@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+
+<html>
+<head>
+<title>Torrents</title>
+<link rel="stylesheet" type="text/css" href="style.css" />
+<script src="shared.js"></script>
+
+<script type="text/javascript">
+
+function showTorrentFiles(hash, base_path) {
+	var table = get("torrent_files_table");
+	var tbody = get("torrent_files_tbody");
+	var json = jsbridge.getTorrentFiles(hash, base_path);
+	var obj = JSON.parse(json);
+	var torrents = obj["torrent_files"];
+
+	//alert("base_path: "+base_path);
+
+	hide(table);
+	removeChilds(tbody);
+	for(var i = 0; i < torrents.length; ++i) {
+		var t = torrents[i];
+		var tr = append(tbody, "tr");
+		append(tr, "td", "<a href='magnet:?xt=urn:btih:"+hash + base_path + t.name+"'>"+t.name+"</a>");
+		append(tr, "td", formatSize(t.size));
+		append(tr, "td", formatProgress(t.size, t.progress));
+		append(tr, "td", formatPriority(t.priority));
+	}
+
+	if(base_path.length > 1 && base_path != "/") {
+		var pos = base_path.lastIndexOf("/", base_path.length - 2);
+		var parent_folder = base_path.substr(0, pos+1);
+		//alert(parent_folder);
+		//alert(joinPath(hash, parent_folder));
+		if(parent_folder == "/") {
+			get("parent").setAttribute("href", "magnet:?xt=urn:btih:"+hash);
+		} else {
+			get("parent").setAttribute("href", "magnet:?xt=urn:btih:"+joinPath(hash, parent_folder));
+		}
+	} else {
+		get("parent").setAttribute("href", "torrents_viewer.html");
+	}
+	
+	show(table);
+}
+
+var s;
+function init() {
+	var href = window.location.href;
+	var params = parseQueryParams(href);
+
+	var path, hash;
+	if('path' in params) {
+		path = joinPath("/", params.path, "/");
+	} else {
+		path = "/";
+	}
+
+	if('hash' in params) {
+		hash = params.hash;
+	} else if('xt' in params) {
+		hash = params.xt.substring(9);
+	} else {
+		hash = "";
+	}
+
+	var fn = function() {
+		showTorrentFiles(hash, path);
+	};
+	
+	fn();
+	//s = setIntervalAndExecute(fn, 1000);
+}
+</script>
+</head>
+<body onload="init();">
+
+<table id="torrent_files_table">
+<thead><tr><th>Path</th><th>Size</th><th>Progress</th><th>Priority</th></tr></thead>
+<tbody id="torrent_files_tbody"></tbody>
+</table>
+<button type="button" id="parent" href="" onclick="window.location.href = this.getAttribute('href');">..</button> 
+
+<button type="button" onclick="window.clearInterval(s);">Stop Update</button>
+</body>
+</html>

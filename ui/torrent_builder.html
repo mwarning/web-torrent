@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+
+<html>
+<head>
+<title>Builder</title>
+
+<link rel="stylesheet" type="text/css" href="style.css" />
+<script src="shared.js"></script>
+
+<script type="text/javascript">
+
+var selected_files = [];
+var in_progress = False;
+
+function handleFileSelect(e) {
+	e.stopPropagation();
+	e.preventDefault();
+	
+	if(in_progress) {
+		alert("In Progress");
+		return;
+	}
+	
+	var files = e.dataTransfer.files; ;
+	var types = e.dataTransfer.types;
+
+	for (var i = 0, f; f = files[i]; i++) {
+		var path = jsbridge.getFullPath(f.name); //get_last_dropped_files
+		if(path.length == 0) {
+			alert("Failed to get full path of "+ f.name);
+		} else {
+			selected_files.push({name : f.name, path : path, size : f.size });
+		}
+	}
+	
+	display_files();
+ }
+ 
+ function clear_files() {
+ 	if(in_progress) {
+		alert("In Progress");
+		return;
+	}
+	selected_files = [];
+	display_files();
+ }
+ 
+ function display_files() {
+	var output = [];
+	var count = 0;
+	var size = 0;
+	
+	for (var i = 0, file; file = selected_files[i]; i++) {
+		count += 1;
+		size += file.size;
+		output.push('<li><strong>', file.name, '</strong> ', formatSize(file.size), '</li>');
+	}
+	
+	document.getElementById('list').innerHTML = "<ul>" + output.join('') + "</ul>";
+	document.getElementById('files_count').innerHTML = count;
+	document.getElementById('files_size').innerHTML = formatSize(size);
+ }
+ 
+function create_torrent() {
+	var paths = [];
+	for (var i = 0, file; file = selected_files[i]; i++) {
+		paths.push(file.path);
+	}
+	jsbridge.createTorrent(paths)
+}
+ 
+function handleDragOver(e) {
+	e.stopPropagation();
+	e.preventDefault();
+	e.dataTransfer.dropEffect = 'copy';
+}
+
+function setProgress(progress) {
+	if(progress == 100) {
+		in_progress = False;
+		document.getElementById('list').innerHTML = "<strong>Done</strong>";
+		clear_files();
+	} else {
+		in_progress = True;
+		document.getElementById('list').innerHTML = "<strong>"+progress+"%</strong>";
+	}
+}
+
+function init() {
+	if (window.File && window.FileReader && window.FileList && window.Blob) {
+		// Great success! All the File APIs are supported.
+	} else {
+		alert('The File APIs are not fully supported in this browser.');
+	}
+	
+	var dropZone = document.getElementById('drop_zone');
+	dropZone.addEventListener('dragover', handleDragOver, false);
+	dropZone.addEventListener('drop', handleFileSelect, false);
+}
+</script>
+
+</head>
+<body onload="init();">
+<div id="drop_zone">Drop files here</div>
+Files: <span id="files_count">0</span>, Size: <span id="files_size">0 Bytes</span>.
+<div id="list"></div>
+<a href="/home/mwarning/myProjects/web_torrent/my.torrent">foooo</a>
+<button type="button" onclick="clear_files();">Clear</button>
+<button type="button" onclick="create_torrent();">Create Torrent</button>
+</body>
+</html>

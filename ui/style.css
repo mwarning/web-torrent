@@ -1,0 +1,25 @@
+.example {
+	padding: 10px;
+	border: 1px solid #ccc;
+}
+
+#drop_zone {
+	border: 2px dashed #bbb;
+	-moz-border-radius: 5px;
+	-webkit-border-radius: 5px;
+	border-radius: 5px;
+	padding: 25px;
+	text-align: center;
+	font: 20pt bold 'Vollkorn';
+	color: #bbb;
+}
+
+.thumb {
+	height: 75px;
+	border: 1px solid #000;
+	margin: 10px 5px 0 0;
+}
+
+td {
+	white-space:nowrap;
+}

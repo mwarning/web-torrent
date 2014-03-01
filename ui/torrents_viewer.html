@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+
+<html>
+<head>
+<title>Torrents</title>
+<link rel="stylesheet" type="text/css" href="style.css" />
+<script src="shared.js"></script>
+
+<script type="text/javascript">
+
+function appendSpeedCell(parent, speed) {
+	var td = append(parent, "td");
+	//td.setAttribute("value", speed);
+	if(typeof speed == 'undefined' || speed == 0) {
+		td.className = "speed";
+	} else if(speed < 5120) { // 5KB/s
+		td.className = "speed slowest";
+	} else  if(speed < 10240) { // 10KB/s
+		td.className = "speed slow";
+	} else  if(speed < 15360) { // 15KB/s
+		td.className = "speed medium";
+	} else if(speed < 20480) { // 20KB/s
+		td.className = "speed fast";
+	} else if(speed > 30960) { // 30KB/S
+		td.className = "speed fastest";
+	}
+	td.firstChild.nodeValue = formatSpeed(speed);
+}
+
+function getActionButtons(hash, status) {
+	var str = "";
+	str += "<span onclick=\"jsbridge.torrentAction('pause', '"+hash+"');\">Pause</span>/";
+	str += "<span onclick=\"jsbridge.torrentAction('resume', '"+hash+"');\">Resume</span>/";
+	str += "<span onclick=\"jsbridge.torrentAction('remove', '"+hash+"');\">Remove</span>";
+	return str;
+}
+
+/* Show all downloads */
+function updateList() {
+	var table = get("torrents_table");
+	var tbody = get("torrents_tbody");
+	var json = jsbridge.getAllTorrents();
+	var obj = JSON.parse(json);
+	var torrents = obj["torrents"];
+	
+	hide(table);
+	removeChilds(tbody);
+	for(var i = 0; i < torrents.length; ++i) {
+		var t = torrents[i];
+		var tr = append(tbody, "tr");
+		append(tr, "td", "<a href=\"magnet:?xt=urn:btih:"+t.hash+"\">"+t.name+"</a>");
+		append(tr, "td", formatValue(t.progress)+"%");
+		append(tr, "td", formatSize(t.total_size));
+		append(tr, "td", formatValue(t.num_peers) +"/"+formatValue(t.num_seeds));
+		append(tr, "td", formatValue(t.status));
+		append(tr, "td", formatValue(t.num_files));
+		append(tr, "td", formatValue(t.upload_rate)+"/"+formatValue(t.download_rate));
+		append(tr, "td", getActionButtons(t.hash, t.status));
+	}
+	show(table);
+}
+
+var s;
+function init() {
+	s = setIntervalAndExecute(updateList, 1000);
+}
+</script>
+</head>
+<body onload="init();">
+
+<table id="torrents_table">
+<thead><tr><th>Name</th><th>Progress</th><th>Size</th><th>Peers</th><th>Status</th><th>Files</th><th>Transfer</th><th>Actions</th></tr></thead>
+<tbody id="torrents_tbody"></tbody>
+</table>
+
+<button type="button" onclick="window.clearInterval(s);">Stop Update</button>
+
+</body>
+</html>
