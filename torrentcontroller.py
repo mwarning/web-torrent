@@ -112,7 +112,6 @@ class TorrentController(QObject):
 		TorrentController.createTorrent(torrent_file_path, content_folder_path, progress_cb)
 
 	def addTorrentFile(self, file_path, paused = False):
-		#print("addTorrentFile: {}".format(file_path))
 		
 		if not os.path.isfile(file_path):
 			print("File does not exist: {}".format(file_path))
@@ -157,10 +156,9 @@ class TorrentController(QObject):
 		
 		download = self.findTorrentByHash(info_hash)
 		if download:
-			self.resumeDownload(download)
 			return download
 		else:
-			save_path = self.cache_path #tempfile.mkdtemp(dir=self.cache_path)
+			save_path = self.cache_path
 			
 			atp = {}
 			atp["save_path"] = save_path

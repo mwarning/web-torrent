@@ -156,7 +156,6 @@ class JavaScriptBridge(QObject):
 		
 		
 		out.append(u']}')
-		print(u''.join(out))
 		return QString(u''.join(out))
 	
 	@pyqtSlot(int, result="QString")
