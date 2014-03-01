@@ -368,7 +368,7 @@ if __name__ == "__main__":
 	
 	main_window.openTab(QUrl("file://" + os.path.abspath("ui/torrents_viewer.html")))
 	main_window.openTab(QUrl("file://" + os.path.abspath("ui/torrent_builder.html")))
-	main_window.openTab(QUrl("file://" + os.path.abspath("cache/some_site/index.html")))
+	main_window.openTab(QUrl("file://" + os.path.abspath("cache/some_local_content/index.html")))
 	main_window.show()
 	
 	sys.exit(app.exec_())
