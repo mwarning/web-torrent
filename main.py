@@ -261,6 +261,16 @@ class MainWindow(QMainWindow):
 		libtMenu.addAction(lsdAction)
 		libtMenu.addAction(dhtAction)
 
+	def keyPressEvent(self, event):
+		if (event.modifiers() & Qt.ControlModifier) and (event.key() == Qt.Key_T):
+			if self.tabWidget.count() < 15:
+				self.openTab(QUrl("http://google.com"))
+			else:
+				print("Too many tabs open.")
+				event.ignore()
+		else:
+			event.ignore()
+
 	def showSource(self):
 		tab = self.tabWidget.currentWidget()
 		if tab:
