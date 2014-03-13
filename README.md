@@ -3,6 +3,7 @@ and downloads content from torrents when clicking on magnet links.
 
 This browser supports links into torrent content: `<a> href="magnet:?xt=hash/foo/index.html">Click here</a>`  
 A magnet link / torrent files content can be browsed and displayed like a website.
+New torrents can be created via drag&drop and then shared via magnet link.
 
 This is an experiment to explore how web sites and P2P technology can be merged.
 
@@ -14,7 +15,6 @@ This is an experiment to explore how web sites and P2P technology can be merged.
 
 Future plans:
  * less bugs :-)
- * Creating torrents
  * mutable / signed content
  * access to the DHT as DNS addition
  * everything as browser plugin for Firefox/Chrome etc.
