@@ -1,6 +1,5 @@
 #!/usr/bin/env python
 
-
 import os
 import sys
 import math
@@ -23,7 +22,6 @@ from PyQt4.QtWebKit import *
 from PyQt4.QtNetwork import *
 
 
-#not needed at all yet
 class NetworkAccessManager(QNetworkAccessManager):
 
 	def __init__(self, manager, parent):
@@ -35,33 +33,37 @@ class NetworkAccessManager(QNetworkAccessManager):
 		self.setProxyFactory(manager.proxyFactory())
 
 	def createRequest(self, operation, request, device):
+		url = request.url()
+
+		if operation == QNetworkAccessManager.GetOperation:
+			pass
+
 		return QNetworkAccessManager.createRequest(self, operation, request, device)
 
 
 class WebView(QWebView):
-	
 	tabOpenRequested = pyqtSignal(QUrl)
-	
+
 	def __init__(self, parent = None):
 		super(WebView, self).__init__(parent)
-		
+
 		oldManager = self.page().networkAccessManager()
 		newManager = NetworkAccessManager(oldManager, self)
 		self.page().setNetworkAccessManager(newManager)
-		
+
 		self.page().setLinkDelegationPolicy(QWebPage.DelegateAllLinks)
 		self.page().setForwardUnsupportedContent(True)
 		self.lastClickedMouseButton = Qt.LeftButton
-		
+
 		self.downloader = Downloader(self, newManager)
 		self.page().unsupportedContent.connect(self.downloader.saveFile)
 		self.page().downloadRequested.connect(self.downloader.startDownload)
 
 		self.linkClicked.connect(self.loadContent)
-		
+
 		self.jsbridge = None
 		self.page().mainFrame().javaScriptWindowObjectCleared.connect(self.addJSObject)
-	
+
 	def addJSObject(self):
 		''' Only allow access JavaScriptBridge from local files'''
 		if self.url().scheme() == "file" and self.url().path().endsWith(".html"):
@@ -69,56 +71,55 @@ class WebView(QWebView):
 			self.page().mainFrame().addToJavaScriptWindowObject("jsbridge", self.jsbridge);
 		else:
 			self.jsbridge = None
-	
+
 	def dragMoveEvent(self, event):
 		print("WebView.dragMoveEvent")
 		urls = event.mimeData().urls()
-		
+
 		if self.jsbridge:
 			event.acceptProposedAction()
 		elif len(urls) == 1:
 			url = urls[0]
 			path = urls[0].path()
-			
 			event.acceptProposedAction()
 		
 		QWebView.dragMoveEvent(self, event)
 
 	def dropEvent(self, event):
 		print("WebView.dropEvent")
-		
+
 		urls = event.mimeData().urls()
-		
+
 		if self.jsbridge:
 			self.jsbridge.last_dropped_urls = urls
-		
+
 		if len(urls) == 1:
 			url = urls[0]
 			path = str(urls[0].path())
-			
+
 			if url.scheme() == "magnet":
 				#todo
-				pass
+				print("self.addMagnetLink(str(url.toString()))")
 			elif url.scheme() == "file" and os.path.isfile(path) and path.endswith(".torrent"):
 				self.handleUrl(url)
-				
+
 		QWebView.dropEvent(self, event)
-	
+
 	def handleUrl(self, url):
 		print("handleUrl: {}".format(url))
-		
+
 		href = str(url.toString())
 		pos = findSingleSlash(href)
 		base_url = href[:pos]
-		relative_path = href[pos+1:] #we cut off the slash at the front
-		
+		relative_path = href[pos+1:]
+
 		d = None
 		if url.scheme() == "magnet" or url.path().endsWith(".torrent"):
 			if url.scheme() == "magnet":
 				d = controller.addMagnetLink(base_url)
 			else:
 				d = controller.addTorrentFile(base_url)
-			
+
 			if not d:
 				path = os.path.abspath("ui/error.html")
 			elif not d.has_metadata():
@@ -127,15 +128,15 @@ class WebView(QWebView):
 				path = os.path.abspath("ui/torrent_viewer.html")
 				path += "?hash=" + d.info_hash()
 			elif d.contains_file(relative_path):
-				
+
 				#select for download if file is not yet downloaded
 				d.select_file(relative_path)
-				
-				path = os.path.abspath(d.storage_path + relative_path)
+
+				path = os.path.join(d.storage_path, relative_path)
 			else:
 				path = os.path.abspath("ui/torrent_viewer.html")
 				path += "?hash=" + d.info_hash() + "&path=" + relative_path
-			
+
 			self.load(QUrl("file://"+path))
 		elif url.scheme() == "file":
 			if len(relative_path) > 0 and relative_path[-1] == '/':
@@ -182,17 +183,17 @@ class TabWidget(QWidget):
 		vlayout.addWidget(toolBar)
 		vlayout.addWidget(self.web)
 		vlayout.addWidget(self.infoLabel)
-		
+
 		self.addressBar.returnPressed.connect(self.addressBarReturnPressed)
-		
+
 		self.web.urlChanged.connect(self.webUrlChanged)
 		self.web.loadFinished.connect(self.webLoadFinished)
-		
+
 		self.web.page().linkHovered.connect(self.onLinkHovered)
-		
+
 		QWebSecurityOrigin.addLocalScheme("magnet")
 		QNetworkProxyFactory.setUseSystemConfiguration(True)
-	
+
 	def onLinkHovered(self, link, title, textContent):
 		if len(link) > 80:
 			self.infoLabel.setText(link[:80]+"...")
@@ -201,7 +202,7 @@ class TabWidget(QWidget):
 
 	def webLoadFinished(self, ok):
 		pass
-	
+
 	def webUrlChanged(self, url):
 		print("setAddressBar")
 		self.addressBar.setText(url.toString())
@@ -221,15 +222,15 @@ class MainWindow(QMainWindow):
 		self.tabWidget.setTabsClosable(False)
 		self.tabWidget.setMovable(True)
 		self.tabWidget.setUsesScrollButtons(True)
-		
+
 		self.controller = controller
-		
+
 		self.tabWidget.tabCloseRequested.connect(self.closeTab)
 		self.tabWidget.currentChanged.connect(self.currentChanged)
-		
+
 		self.setCentralWidget(self.tabWidget)		
 		self.setUnifiedTitleAndToolBarOnMac(True)
-	
+
 		self.setupMenu()
 
 	def setupMenu(self):
@@ -238,7 +239,7 @@ class MainWindow(QMainWindow):
 		self.showCreatorAction = QAction("Create Torrent", self);
 		self.showSourceAction = QAction("Show Source", self);
 		self.showSourceAction.triggered.connect(self.showSource)
-		
+
 		fileMenu = self.menuBar().addMenu("&File")
 		fileMenu.addAction(self.showDownloadsAction)
 		fileMenu.addAction(self.showDhtAction)
@@ -246,17 +247,17 @@ class MainWindow(QMainWindow):
 		fileMenu.addAction(self.showSourceAction)
 		fileMenu.addSeparator()
 		fileMenu.addAction("E&xit", self.close)
-		
+
 		lsdAction = QAction("Local Source Discovery (LSD)", self);
 		lsdAction.setCheckable(True)
 		lsdAction.setChecked(self.controller.getLSD())
 		lsdAction.triggered.connect(self.controller.setLSD)
-		
+
 		dhtAction = QAction("Distributed Hash Table (DHT)", self);
 		dhtAction.setCheckable(True)
 		dhtAction.setChecked(self.controller.getDHT())
 		dhtAction.triggered.connect(self.controller.setDHT)
-	
+
 		libtMenu = self.menuBar().addMenu("&libtorrent")
 		libtMenu.addAction(lsdAction)
 		libtMenu.addAction(dhtAction)
@@ -282,22 +283,22 @@ class MainWindow(QMainWindow):
 		torrent_view.close()
 		dht_view.close()
 		event.accept()
-	
+
 	def closeTab(self, index):
 		if self.tabWidget.count() == 2:
 			self.tabWidget.setTabsClosable(False)
-		
+
 		self.tabWidget.removeTab(index)
 	
 	def openTab(self, url):
 		tab = TabWidget(self)
-		
+
 		tab.web.loadFinished.connect(self.loadFinished)
 		tab.web.tabOpenRequested.connect(self.openTab)
 		tab.web.loadContent(url)
-		
+
 		self.tabWidget.addTab(tab, 'loading...')
-		
+
 		if self.tabWidget.count() == 2:
 			self.tabWidget.setTabsClosable(True)
 
@@ -313,7 +314,7 @@ class MainWindow(QMainWindow):
 		tab = self.sender().parent()
 		index = self.tabWidget.indexOf(tab)
 		self.tabWidget.setTabText(index, tab.web.title())
-
+		#self.setWindowTitle(tab.web.title())
 
 def autoCreateTorrents(controller, content_folders_path):
 	print("(I) Create Torrents files.")
@@ -348,38 +349,38 @@ def autoAddTorrents(controller, content_folders_path):
 
 if __name__ == "__main__":
 	app = QApplication([])
-	
+
 	cache_path = os.path.abspath("cache/")
-	
+
 	controller = TorrentController(cache_path)
 	main_window = MainWindow(controller)
 	torrent_view = TorrentView(controller)
 	dht_view = DhtView(controller)
-	
+
 	main_window.showDhtAction.triggered.connect(dht_view.show)
 	main_window.showDownloadsAction.triggered.connect(torrent_view.show)
-	
-	autoCreateTorrents(controller, cache_path)
+
+	#autoCreateTorrents(controller, cache_path)
 	autoAddTorrents(controller, cache_path)
-	
+
 	'''handler for the SIGINT signal'''
 	def sigint_handler(*args):
 		print("sigint_handler")
 		QApplication.quit()
-	
+
 	signal.signal(signal.SIGINT, sigint_handler)
-	
+
 	def aboutToQuit():
 		print("aboutToQuit")
 		controller.shutdown()
 		time.sleep(1)
-	
+
 	qApp.aboutToQuit.connect(aboutToQuit)
-	
+
 	main_window.openTab(QUrl("file://" + os.path.abspath("ui/torrents_viewer.html")))
 	main_window.openTab(QUrl("file://" + os.path.abspath("ui/torrent_builder.html")))
 	main_window.openTab(QUrl("file://" + os.path.abspath("cache/some_local_content/index.html")))
 	main_window.show()
-	
+
 	sys.exit(app.exec_())
 	

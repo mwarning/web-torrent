@@ -8,19 +8,88 @@
 <script src="shared.js"></script>
 
 <script type="text/javascript">
+var torrent_files = [];
+var in_progress = false;
 
-var selected_files = [];
-var in_progress = False;
+function clearFiles() {
+	if(in_progress) {
+		alert("Torrent creation in progress!");
+		return;
+	}
+	torrent_files = [];
+	displayFiles();
+}
+
+function removeFile(index) {
+	torrent_files.splice(index, 1);
+	displayFiles();
+}
+
+function displayFiles() {
+	var output = [];
+	var count = 0;
+	var size = 0;
+
+	for (var i = 0, file; file = torrent_files[i]; i++) {
+		count += 1;
+		size += file.size;
+		output.push('<li><strong>', file.name, '</strong> ', formatSize(file.size), '<button onclick="removeFile(', i,');">Remove</button>', '</li>');
+	}
+
+	document.getElementById('list').innerHTML = "<ul>" + output.join('') + "</ul>";
+	document.getElementById('torrent_files_count').innerHTML = count;
+	document.getElementById('torrent_files_size').innerHTML = formatSize(size);
+}
+
+function create_torrent() {
+	var src_paths = [];
+	var dst_paths = [];
+	var torrent_name = get("torrent_name").value.trim();
+
+	if(torrent_name.length == 0) {
+		alert("Torrent name is empty.");
+		return;
+	}
+
+	if(torrent_files.length == 0) {
+		alert("Torrent files is empty.");
+		return;
+	}
+
+	for (var i = 0, file; file = torrent_files[i]; i++) {
+		src_paths.push(file.path);
+		dst_paths.push(file.name);
+	}
+
+	jsbridge.createTorrent(torrent_name, src_paths);
+}
+
+//called from jsbridge
+function showProgress(progress) {
+	if(progress == 100) {
+		in_progress = False;
+		document.getElementById('list').innerHTML = "<strong>Done</strong>";
+		clearFiles();
+	} else {
+		in_progress = True;
+		document.getElementById('list').innerHTML = "<strong>"+progress+"%</strong>";
+	}
+}
+
+//called from jsbridge
+function showMessage(msg) {
+	alert(msg);
+}
 
 function handleFileSelect(e) {
 	e.stopPropagation();
 	e.preventDefault();
-	
+
 	if(in_progress) {
 		alert("In Progress");
 		return;
 	}
-	
+
 	var files = e.dataTransfer.files; ;
 	var types = e.dataTransfer.types;
 
@@ -29,61 +98,17 @@ function handleFileSelect(e) {
 		if(path.length == 0) {
 			alert("Failed to get full path of "+ f.name);
 		} else {
-			selected_files.push({name : f.name, path : path, size : f.size });
+			torrent_files.push({name : f.name, path : path, size : f.size });
 		}
 	}
-	
-	display_files();
- }
- 
- function clear_files() {
- 	if(in_progress) {
-		alert("In Progress");
-		return;
-	}
-	selected_files = [];
-	display_files();
- }
- 
- function display_files() {
-	var output = [];
-	var count = 0;
-	var size = 0;
-	
-	for (var i = 0, file; file = selected_files[i]; i++) {
-		count += 1;
-		size += file.size;
-		output.push('<li><strong>', file.name, '</strong> ', formatSize(file.size), '</li>');
-	}
-	
-	document.getElementById('list').innerHTML = "<ul>" + output.join('') + "</ul>";
-	document.getElementById('files_count').innerHTML = count;
-	document.getElementById('files_size').innerHTML = formatSize(size);
- }
- 
-function create_torrent() {
-	var paths = [];
-	for (var i = 0, file; file = selected_files[i]; i++) {
-		paths.push(file.path);
-	}
-	jsbridge.createTorrent(paths)
+
+	displayFiles();
 }
- 
+
 function handleDragOver(e) {
 	e.stopPropagation();
 	e.preventDefault();
 	e.dataTransfer.dropEffect = 'copy';
-}
-
-function setProgress(progress) {
-	if(progress == 100) {
-		in_progress = False;
-		document.getElementById('list').innerHTML = "<strong>Done</strong>";
-		clear_files();
-	} else {
-		in_progress = True;
-		document.getElementById('list').innerHTML = "<strong>"+progress+"%</strong>";
-	}
 }
 
 function init() {
@@ -92,7 +117,7 @@ function init() {
 	} else {
 		alert('The File APIs are not fully supported in this browser.');
 	}
-	
+
 	var dropZone = document.getElementById('drop_zone');
 	dropZone.addEventListener('dragover', handleDragOver, false);
 	dropZone.addEventListener('drop', handleFileSelect, false);
@@ -102,10 +127,13 @@ function init() {
 </head>
 <body onload="init();">
 <div id="drop_zone">Drop files here</div>
-Files: <span id="files_count">0</span>, Size: <span id="files_size">0 Bytes</span>.
+<p>
+<b>Title: </b><input name="name" id="torrent_name" type="text" size="30" maxlength="40">
+<b>Files: </b><span id="torrent_files_count">0</span>
+<b>Size: </b><span id="torrent_files_size">0 Bytes</span>
+</p>
 <div id="list"></div>
-<a href="/home/mwarning/myProjects/web_torrent/my.torrent">foooo</a>
-<button type="button" onclick="clear_files();">Clear</button>
+<button type="button" onclick="clearFiles();">Clear Files</button>
 <button type="button" onclick="create_torrent();">Create Torrent</button>
 </body>
 </html>
