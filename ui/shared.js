@@ -43,8 +43,16 @@ function formatSize(bytes)
 function formatPriority(priority) {
 	if(typeof priority === "undefined") {
 		return "-";
+	} else if(priority == 0) {
+		return "none";
+	} else if(priority == 1) {
+		return "normal";
+	} else if(priority >= 2 && priority <= 6) {
+		return "high ("+priority+")";
+	} else if(priority == 7) {
+		return "highest";
 	} else {
-		return ""+priority;
+		return "unknown";
 	}
 }
 
