@@ -363,6 +363,8 @@ if __name__ == "__main__":
 	#autoCreateTorrents(controller, cache_path)
 	autoAddTorrents(controller, cache_path)
 
+	controller.loadSettings("libtorrent.json")
+
 	'''handler for the SIGINT signal'''
 	def sigint_handler(*args):
 		print("sigint_handler")
@@ -372,6 +374,7 @@ if __name__ == "__main__":
 
 	def aboutToQuit():
 		print("aboutToQuit")
+		controller.storeSettings("libtorrent.json")
 		controller.shutdown()
 		time.sleep(1)
 

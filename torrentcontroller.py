@@ -1,6 +1,7 @@
 import os
 import sys
 import math
+import json
 
 import libtorrent
 
@@ -99,6 +100,29 @@ class TorrentController(QObject):
 		self.timer = QTimer()
 		self.timer.timeout.connect(self.sendUpdates)
 		self.timer.start(500)
+
+	def loadSettings(self, path):
+		if not os.path.exists(path):
+			return
+
+		text = open(path, 'rb').read()
+		obj = json.loads(text)
+		ses = libtorrent.session()
+
+		ses.set_download_rate_limit(int(obj.get('download_rate_limit', 0)))
+		ses.set_upload_rate_limit(int(obj.get('upload_rate_limit', 0)))
+
+	def storeSettings(self, path):
+		obj = {}
+		ses = libtorrent.session()
+
+		obj['download_rate_limit'] = int(ses.download_rate_limit())
+		obj['upload_rate_limit'] = int(ses.upload_rate_limit())
+
+		data = json.dumps(obj)
+		file = open(path,'wb')
+		file.write(data)
+		file.close()
 
 	def sendUpdates(self):
 		for download in self.downloads:
