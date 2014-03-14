@@ -60,9 +60,22 @@ function updateList() {
 	show(table);
 }
 
-var s;
+function updateSettings() {
+	var json = jsbridge.getSettings();
+	var obj = JSON.parse(json);
+
+	for(var key in obj) {
+		var val = obj[key];
+		var elem = get(key);
+		if(elem) {
+			elem.innerHTML = val;
+		}
+	}
+}
+
 function init() {
-	s = setIntervalAndExecute(updateList, 1000);
+	setIntervalAndExecute(updateList, 1000);
+	setIntervalAndExecute(updateSettings, 5000);
 }
 </script>
 </head>
@@ -75,5 +88,9 @@ function init() {
 
 <button type="button" onclick="window.clearInterval(s);">Stop Update</button>
 
+<div>Upload Rate Limit: <span id="upload_rate_limit">?</span></div>
+<div>Download Rate Limit: <span id="download_rate_limit">?</span></div>
+<div>Local Upload Rate Limit: <span id="local_upload_rate_limit">?</span></div>
+<div>Local Download Rate Limit: <span id="local_download_rate_limit">?</span></div>
 </body>
 </html>

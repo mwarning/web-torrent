@@ -28,6 +28,68 @@ class JavaScriptBridge(QObject):
 
 		return QString("")
 
+	@pyqtSlot(result="QString")
+	def getSettings(self):
+		out = []
+		s = self.controller.settings()
+
+		out.append(u"{")
+		out.append(u'"upload_rate_limit" : {},'.format(s.upload_rate_limit))
+		out.append(u'"download_rate_limit" : {},'.format(s.download_rate_limit))
+		out.append(u'"local_upload_rate_limit" : {},'.format(s.local_upload_rate_limit))
+		out.append(u'"local_download_rate_limit" : {}'.format(s.local_download_rate_limit))
+		out.append(u"}")
+
+		return QString(u''.join(out))
+
+	'''
+	@pyqtSlot(QString, result="QString")
+	def getStatus(self):
+		out = []
+
+		s = d.status()
+		state_str = ['queued', 'checking', 'downloading metadata', 'downloading', 'finished', 'seeding', 'allocating', 'checking fastresume']
+
+		out.append(u"{")
+
+		if s.state != libtorrent.torrent_status.seeding:
+			out.append(u'"state" : {},'.format(state_str[s.state]))
+			out.append(u'"progress" : {},'.format(s.progress))
+			out.append(u'"total_done" : {},'.format(s.total_done))
+			out.append(u'"num_peers" : {},'.format(s.num_peers))
+			out.append(u'"distributed_copies" : {},'.format(s.distributed_copies))
+			out.append(u'"download_rate" : {},'.format(s.download_rate))
+			out.append(u'"total_download" : {},'.format(s.total_download))
+			out.append(u'"upload_rate" : {},'.format(s.upload_rate))
+			out.append(u'"total_upload" : {},'.format(s.total_upload))
+			out.append(u'"next_announce" : {},'.format(s.next_announce))
+			out.append(u'"tracker" : {},'.format(s.tracker))
+
+		out.append(u"}")
+
+		return QString(u''.join(out))
+	'''
+	'''
+	@pyqtSlot(QString, result="QString")
+	def getPeers(self, download_name):
+		out = []
+
+		peers = d.get_peer_info()
+
+		out.append(u"{")
+
+		for p in peers:
+			out.append(u'"down_speed" : {},'.format(p.down_speed))
+			out.append(u'"total_download" : {},'.format(p.total_download))
+			out.append(u'"up_speed" : {},'.format(p.up_speed))
+			out.append(u'"total_upload" : {},'.format(p.total_upload))
+			out.append(u'"download_queue_length" : {},'.format(p.download_queue_length))
+			out.append(u'"upload_queue_length" : {}'.format(p.upload_queue_length))
+		out.append(u"}")
+
+		return QString(u''.join(out))
+	'''
+
 	@pyqtSlot(QString, QString)
 	def torrentAction(self, action, info_hash):
 		d = self.controller.findTorrentByHash(str(info_hash))

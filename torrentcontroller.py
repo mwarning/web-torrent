@@ -199,29 +199,8 @@ class TorrentController(QObject):
 			self.download_added.emit(download)
 			return download
 
-	def upload_rate(self):
-		return self.session.upload_rate()
-
-	def download_rate(self):
-		return self.session.download_rate()
-
-	def total_download(self):
-		return self.session.total_download()
-
-	def total_upload(self):
-		return self.session.total_upload()
-
-	def set_download_rate_limit(self, bytes):
-		self.session.set_download_rate_limit(bytes)
-
-	def download_rate_limit(self):
-		return self.session.download_rate_limit()
-
-	def set_upload_rate_limit(self, bytes):
-		self.session.set_upload_rate_limit(bytes)
-
-	def upload_rate_limit(self):
-		return self.session.upload_rate_limit()
+	def settings(self):
+		return libtorrent.session_settings()
 
 	def findTorrentByHash(self, hash):
 		for download in self.downloads:
