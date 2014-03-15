@@ -81,12 +81,10 @@ function init() {
 </head>
 <body onload="init();">
 
-<table id="torrents_table">
+<table id="torrents_table" style="display: none;">
 <thead><tr><th>Name</th><th>Progress</th><th>Size</th><th>Peers</th><th>Status</th><th>Files</th><th>Transfer</th><th>Actions</th></tr></thead>
 <tbody id="torrents_tbody"></tbody>
 </table>
-
-<button type="button" onclick="window.clearInterval(s);">Stop Update</button>
 
 <div>Upload Rate Limit: <span id="upload_rate_limit">?</span></div>
 <div>Download Rate Limit: <span id="download_rate_limit">?</span></div>

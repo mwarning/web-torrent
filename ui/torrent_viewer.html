@@ -45,7 +45,6 @@ function showTorrentFiles(hash, base_path) {
 	show(table);
 }
 
-var s;
 function init() {
 	var href = window.location.href;
 	var params = parseQueryParams(href);
@@ -68,20 +67,18 @@ function init() {
 	var fn = function() {
 		showTorrentFiles(hash, path);
 	};
-	
-	fn();
-	//s = setIntervalAndExecute(fn, 1000);
+
+	setIntervalAndExecute(fn, 10000);
 }
 </script>
 </head>
 <body onload="init();">
 
-<table id="torrent_files_table">
+<table id="torrent_files_table" style="display: none;">
 <thead><tr><th>Path</th><th>Size</th><th>Progress</th><th>Priority</th></tr></thead>
 <tbody id="torrent_files_tbody"></tbody>
 </table>
 <button type="button" id="parent" href="" onclick="window.location.href = this.getAttribute('href');">..</button> 
 
-<button type="button" onclick="window.clearInterval(s);">Stop Update</button>
 </body>
 </html>
