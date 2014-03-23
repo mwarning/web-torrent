@@ -307,11 +307,15 @@ class TorrentController(QObject):
 				del self.downloads[i]
 				self.download_removed.emit(download)
 				self.session.remove_torrent(download.handle, libtorrent.options_t.delete_files)
-				
+
 				path = os.path.join(self.cache_path, d.info_hash())
-				os.remove(path+'.torrent')
-				os.remove(path+'.torrent.fastresume')
-				
+
+				if os.path.exists(path+'.torrent'):
+					os.remove(path+'.torrent')
+
+				if os.path.exists(path+'.torrent.fastresume'):
+					os.remove(path+'.torrent.fastresume')
+
 				break
 
 	def setLSD(self, enable):
