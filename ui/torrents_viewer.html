@@ -27,11 +27,17 @@ function appendSpeedCell(parent, speed) {
 	td.firstChild.nodeValue = formatSpeed(speed);
 }
 
+function remove_download(hash) {
+	if(confirm("Are you sure you want to delete this image?")) {
+		jsbridge.torrentAction('remove', hash);
+	}
+}
+
 function getActionButtons(hash, status) {
 	var str = "";
 	str += "<span onclick=\"jsbridge.torrentAction('pause', '"+hash+"');\">Pause</span>/";
 	str += "<span onclick=\"jsbridge.torrentAction('resume', '"+hash+"');\">Resume</span>/";
-	str += "<span onclick=\"jsbridge.torrentAction('remove', '"+hash+"');\">Remove</span>";
+	str += "<span onclick=\"remove_download('"+hash+"');\">Remove</span>";
 	return str;
 }
 
