@@ -22,6 +22,7 @@ from PyQt4.QtWebKit import *
 from PyQt4.QtNetwork import *
 
 
+''' Not in use yet - but kept in case it is needed '''
 class NetworkAccessManager(QNetworkAccessManager):
 
 	def __init__(self, manager, parent):
