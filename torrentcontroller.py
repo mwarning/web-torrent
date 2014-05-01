@@ -107,12 +107,9 @@ class TorrentController(QObject):
 
 		text = open(path, 'rb').read()
 		obj = json.loads(text)
-		settings = libtorrent.session_settings()
 
-		settings.set_download_rate_limit(int(obj.get('download_rate_limit', 0)))
-		settings.set_upload_rate_limit(int(obj.get('upload_rate_limit', 0)))
-
-		libtorrent.session().set_settings(settings)
+		self.session.set_download_rate_limit(int(obj.get('download_rate_limit', 0)))
+		self.session.set_upload_rate_limit(int(obj.get('upload_rate_limit', 0)))
 
 	def storeSettings(self, path):
 		obj = {}
