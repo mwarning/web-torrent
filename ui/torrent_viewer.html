@@ -15,8 +15,6 @@ function showTorrentFiles(hash, base_path) {
 	var obj = JSON.parse(json);
 	var torrents = obj["torrent_files"];
 
-	//alert("base_path: "+base_path);
-
 	hide(table);
 	removeChilds(tbody);
 	for(var i = 0; i < torrents.length; ++i) {
@@ -31,8 +29,7 @@ function showTorrentFiles(hash, base_path) {
 	if(base_path.length > 1 && base_path != "/") {
 		var pos = base_path.lastIndexOf("/", base_path.length - 2);
 		var parent_folder = base_path.substr(0, pos+1);
-		//alert(parent_folder);
-		//alert(joinPath(hash, parent_folder));
+
 		if(parent_folder == "/") {
 			get("parent").setAttribute("href", "magnet:?xt=urn:btih:"+hash);
 		} else {
